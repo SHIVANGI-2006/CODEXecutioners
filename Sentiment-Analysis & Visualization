@@ -1,0 +1,189 @@
+from nltk.sentiment import SentimentIntensityAnalyzer
+from tqdm.notebook import tqdm
+
+sia = SentimentIntensityAnalyzer()
+
+sia.polarity_scores('I am so happy!')
+
+sia.polarity_scores('This is the worst thing ever.')
+
+print(sia.polarity_scores(example))
+
+res = {}
+for i, row in tqdm(df.iterrows(), total=len(df)):
+    statement = row['statement']
+    speaker = row['speaker']
+    res[speaker] = sia.polarity_scores(statement)
+    print(res[speaker])
+
+vaders = pd.DataFrame(res).T
+vaders = vaders.reset_index().rename(columns={'index': 'speaker'})
+vaders = vaders.merge(df, how='left')
+
+# Now we have sentiment score and metadata
+vaders.head()
+
+ax = sns.barplot(data=vaders, x='speaker', y='compound')
+ax.set_title('Compund score by speaker')
+plt.show()
+
+plt.figure(figsize=(80,40))
+axs=sns.barplot(data=vaders, x='subject(s)', y='pos')
+axs.set_title('Positive')
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(80,35))
+axs1=sns.barplot(data=vaders, x='subject(s)', y='neu')
+axs1.set_title('Neutral')
+
+plt.show()
+
+plt.figure(figsize=(80,35))
+axs2= sns.barplot(data=vaders, x='subject(s)', y='neg')
+axs2.set_title('Negative')
+
+plt.show()
+
+plt.figure(figsize=(20,10))
+sns.countplot(y='state info',data=vaders)
+
+plt.figure(figsize=(10, 3))
+
+# Select only numeric columns for correlation
+numeric_vaders = vaders.select_dtypes(include=['float64', 'int64'])
+
+# Now you can safely compute correlation and plot
+sns.heatmap(numeric_vaders.corr(), annot=True, cmap='viridis')
+
+plt.title('Correlation Heatmap of VADER Scores and Counts')
+plt.show()
+
+!pip install transformers
+
+pip install torch
+
+from transformers import AutoTokenizer
+from transformers import AutoModelForSequenceClassification
+from scipy.special import softmax
+
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+MODEL = "cardiffnlp/twitter-roberta-base-sentiment"
+tokenizer = AutoTokenizer.from_pretrained(MODEL)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL)
+
+
+# VADER results on example
+print(example)
+sia.polarity_scores(example)
+
+# Run for Roberta Model
+encoded_text = tokenizer(example, return_tensors='pt')
+output = model(**encoded_text)
+scores = output[0][0].detach().numpy()
+scores = softmax(scores)
+scores_dict = {
+    'roberta_neg' : scores[0],
+    'roberta_neu' : scores[1],
+    'roberta_pos' : scores[2]
+}
+print(scores_dict)
+
+ def polarity_scores_roberta(example):
+    encoded_text = tokenizer(example, return_tensors='pt')
+    output = model(**encoded_text)
+    scores = output[0][0].detach().numpy()
+    scores = softmax(scores)
+    scores_dict = {
+        'roberta_neg' : scores[0],
+        'roberta_neu' : scores[1],
+        'roberta_pos' : scores[2]
+    }
+    return scores_dict
+
+print(df.columns)
+
+pip install ipywidgets
+
+jupyter nbextension enable --py widgetsnbextension
+jupyter notebook
+
+res = {}
+for i, row in tqdm(df.iterrows(), total=len(df)):
+    try:
+        statement = row['statement']
+        speaker = row['speaker']
+        vader_result = sia.polarity_scores(statement)
+        vader_result_rename = {}
+        for key, value in vader_result.items():
+            vader_result_rename[f"vader_{key}"] = value
+        roberta_result = polarity_scores_roberta(statement)
+        both = {**vader_result_rename, **roberta_result}
+        res[speaker] = both
+    except RuntimeError:
+        print(f'Broke for speaker {speaker}')
+
+results_df = pd.DataFrame(res).T
+results_df = results_df.reset_index().rename(columns={'index': 'speaker'})
+results_df = results_df.merge(df, how='left')
+
+results_df.columns
+
+sampled_df = results_df.sample(n=500, random_state=42)  # adjust n as needed
+
+sns.pairplot(data=sampled_df,
+             vars=['vader_neg', 'vader_neu', 'vader_pos',
+                   'roberta_neg', 'roberta_neu', 'roberta_pos'],
+             hue='venue',
+             palette='tab10')
+plt.show()
+
+sampled_df = results_df.sample(n=500, random_state=42)  # adjust n as needed
+
+sns.pairplot(data=sampled_df,
+             vars=['vader_neg', 'vader_neu', 'vader_pos',
+                   'roberta_neg', 'roberta_neu', 'roberta_pos'],
+             hue='subject(s)',
+             palette='tab10')
+plt.show()
+
+sampled_df = results_df.sample(n=500, random_state=42)  # adjust n as needed
+
+sns.pairplot(data=sampled_df,
+             vars=['vader_neg', 'vader_neu', 'vader_pos',
+                   'roberta_neg', 'roberta_neu', 'roberta_pos'],
+             hue='state info',
+             palette='tab10')
+plt.show()
+
+results_df.query('false counts == 1') \
+    .sort_values('roberta_pos', ascending=False)['statement'].values[0]
+
+results_df.query('false counts == 1') \
+    .sort_values('vader_pos', ascending=False)['statement'].values[0]
+
+results_df.query('false counts == 5') \
+    .sort_values('roberta_neg', ascending=False)['statement'].values[0]
+
+results_df.query('false counts == 5') \
+    .sort_values('vader_neg', ascending=False)['statement'].values[0]
+
+from transformers import pipeline
+
+sent_pipeline = pipeline("sentiment-analysis")
+
+sent_pipeline = pipeline("sentiment-analysis", model="distilbert/distilbert-base-uncased-finetuned-sst-2-english")
+
+!pip install ipywidgets
+!jupyter nbextension enable --py widgetsnbextension
+!jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+sent_pipeline("This is absolutely fantastic!")
+from transformers import pipeline
+
+sent_pipeline = pipeline("sentiment-analysis")
+
+statement = input("Enter your statement: ")
+s=sent_pipeline(statement)
+print(s)
