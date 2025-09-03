@@ -1,0 +1,24 @@
+train_dataset
+train_dataset.drop_duplicates()
+train_dataset=train_dataset.drop(columns='[ID].json')
+df = train_dataset
+ax = df['label'].value_counts().sort_index() \
+    .plot(kind='bar',
+          title='Analysis of information',
+          figsize=(8, 5))
+ax.set_xlabel('label')
+plt.show()
+example = df['statement'][80]
+print(example)
+import nltk
+from nltk import sent_tokenize
+import nltk
+nltk.download('punkt_tab')
+tokens = nltk.word_tokenize(example)
+tokens[:9]
+nltk.download('averaged_perceptron_tagger_eng')
+tagged = nltk.pos_tag(tokens)
+tagged[:10]
+#identify named entities
+nltk.download('maxent_ne_chunker_tab')
+nltk.download('words')
